@@ -9,6 +9,9 @@ using System.Drawing.Drawing2D;
 
 namespace MillerInc.PhysicsEngine.DisplayToolkit
 {
+    /// <summary>
+    /// In development, may not be included in this library
+    /// </summary>
     public class RenderStates
     {
         /// <summary>

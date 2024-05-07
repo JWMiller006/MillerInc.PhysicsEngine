@@ -134,6 +134,11 @@ namespace MillerInc.PhysicsEngine
         /// </summary>
         public Shape2D Shape2D { get; set; } = Shape2D.PointMass;
 
+        /// <summary>
+        /// The net charge of the object in Coulombs (assumed uniformly distributed) 
+        /// </summary>
+        public float Charge { get; set; } = 1; 
+
         #endregion
 
         #region Forces
@@ -166,6 +171,15 @@ namespace MillerInc.PhysicsEngine
                 output += force; 
             }
             return output; 
+        }
+
+        public bool IsPointInside(Vector3 point)
+        {
+            if (Shape3D == Shape3D.Cube)
+            {
+                //if ()
+            }
+            return false; 
         }
 
         #endregion

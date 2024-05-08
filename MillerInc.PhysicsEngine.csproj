@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <Reference Include="MillerInc">
-      <HintPath>..\MillerInc\bin\Release\netstandard2.0\MillerInc.dll</HintPath>
+      <HintPath>Deps\MillerInc.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing.Common">
       <HintPath>C:\Users\jwmil\.nuget\packages\system.drawing.common\8.0.0-rc.2.23479.14\lib\netstandard2.0\System.Drawing.Common.dll</HintPath>

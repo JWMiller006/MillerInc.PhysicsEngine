@@ -172,7 +172,12 @@ namespace MillerInc.PhysicsEngine
             }
             return output; 
         }
-
+        
+        /// <summary>
+        /// NOT FINISHED YET, IN DEVELOPMENT
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public bool IsPointInside(Vector3 point)
         {
             if (Shape3D == Shape3D.Cube)
@@ -180,6 +185,19 @@ namespace MillerInc.PhysicsEngine
                 //if ()
             }
             return false; 
+        }
+
+        /// <summary>
+        /// NOT FINISHED YET, IN DEVELOPMENT
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public CollisionInfo Collide(PhysicsObject other)
+        {
+            CollisionInfo collisionInfo = new();
+            collisionInfo.Collided = true; 
+            collisionInfo.GetCollisionInfo(this, other, CollisionType.Stick);
+            return collisionInfo;
         }
 
         #endregion

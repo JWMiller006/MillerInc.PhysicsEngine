@@ -14,6 +14,20 @@ namespace MillerInc.PhysicsEngine.HLoD
             
         }
 
+        public void FromPhysicsObject(PhysicsObject obj)
+        {
+            this.Position = obj.Position;
+            this.Rotation = obj.Rotation;
+            this.Velocity = obj.Velocity;
+            this.Acceleration = obj.Acceleration;
+            this.Omega = obj.Omega;
+            this.Alpha = obj.Alpha;
+            this.ActiveForces = obj.ActiveForces;
+            this.Mass = obj.Mass;
+            this.MomentOfInertia = obj.MomentOfInertia; 
+            // this.CollisionBounds = obj.CollisionBounds;
+        }
+
         #region Attributes
 
         #region Electricity & Magnetism

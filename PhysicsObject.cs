@@ -91,7 +91,7 @@ namespace MillerInc.PhysicsEngine
         /// </summary>
         public float Mass { get; set; }
         
-        public float Inertia { get; set; }
+        public float MomentOfInertia { get; set; }
 
         /// <summary>
         /// The rotational velocity of the object
@@ -210,7 +210,7 @@ namespace MillerInc.PhysicsEngine
         /// <param name="other">the object to copy from </param>
         private void CopyFrom(PhysicsObject other)
         {
-            this.Inertia = other.Inertia;
+            this.MomentOfInertia = other.MomentOfInertia;
             this.Mass = other.Mass;
             this.Size = other.Size;
             this.Position = other.Position;

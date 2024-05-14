@@ -22,9 +22,9 @@ namespace MillerInc.PhysicsEngine
             this.Rotation = new();
             this.Velocity = new();
             this.Acceleration = new();
-            this.Omega = new();
-            this.Alpha = new();
-            this.ActiveForces = new Vector3[0].ToList(); ; 
+            this.AngularVelocity = new();
+            this.AngularAcceleration = new();
+            this.ActiveForces = []; 
         }
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace MillerInc.PhysicsEngine
             this.Rotation = rotation;
             this.Velocity = new();
             this.Acceleration = new();
-            this.Omega = new();
-            this.Alpha = new();
-            this.ActiveForces = new();
+            this.AngularVelocity = new();
+            this.AngularAcceleration = new();
+            this.ActiveForces = [];
         }
 
         /// <summary>
@@ -65,6 +65,11 @@ namespace MillerInc.PhysicsEngine
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// The name of the object
+        /// </summary>
+        public string ObjectName { get; set; } = "Default Object";
 
         /// <summary>
         /// The position of the center of mass
@@ -96,12 +101,12 @@ namespace MillerInc.PhysicsEngine
         /// <summary>
         /// The rotational velocity of the object
         /// </summary>
-        public Quaternion Omega { get; set; }
+        public Vector3 AngularVelocity { get; set; }
 
         /// <summary>
         /// The rotational acceleration of the object
         /// </summary>
-        public Quaternion Alpha { get; set; }
+        public Vector3 AngularAcceleration { get; set; }
 
         /// <summary>
         /// This length, width, and height of the object
@@ -112,7 +117,7 @@ namespace MillerInc.PhysicsEngine
         /// The forces that are actively applied to the system;
         ///  if the force is dependent on time, call update force
         /// </summary>
-        public List<Vector3> ActiveForces { get; set; } 
+        public List<Force> ActiveForces { get; set; } 
 
         /// <summary>
         /// Returns the net force
@@ -143,20 +148,37 @@ namespace MillerInc.PhysicsEngine
 
         #region Forces
 
+        /// <summary>
+        /// Applies the force to the object for infinite time
+        /// </summary>
+        /// <param name="force"></param>
         public void ApplyForce(Vector3 force)
         {
-            this.ActiveForces.Add(force);
+            this.ActiveForces.Add(new(force));
+        }
+        
+        /// <summary>
+        /// Applies a force to the object for a certain amount of time
+        /// </summary>
+        /// <param name="force"></param>
+        /// <param name="timeApplied"></param>
+        public void ApplyForce(Vector3 force, float timeApplied)
+        {
+            this.ActiveForces.Add(new(force, timeApplied));
         }
 
         /// <summary>
-        /// NOT IMPLEMENTED: the plan is if there is a variable force, 
-        /// there has to be a way for it to know that it needs to update, but that just doesn't work
+        /// Update the forces as of current, should be called when a force is added or removed
         /// </summary>
-        public void UpdateForces()
+        public void UpdateForces(float timeStep)
         {
             GetNetForce();
             this.Acceleration = new(this.NetForce.X / this.Mass, 
                 this.NetForce.Y / this.Mass, this.NetForce.Z / this.Mass); 
+            for (int i = 0; i < this.ActiveForces.Count; i++)
+            {
+                this.ActiveForces[i].TimeRemaining -= timeStep;
+            }
         }
 
         /// <summary>
@@ -165,12 +187,33 @@ namespace MillerInc.PhysicsEngine
         /// <returns>the net force</returns>
         public Vector3 GetNetForce()
         {
+            for (int i = 0; i < this.ActiveForces.Count; i++)
+            {
+                if (this.ActiveForces[i].ForceVector.Length() == 0)
+                {
+                    this.ActiveForces.RemoveAt(i);
+                }
+                else if (this.ActiveForces[i].TimeRemaining <= 0)
+                {
+                    this.ActiveForces.RemoveAt(i);
+                }
+            }
             Vector3 output = new(0f, 0f, 0f); 
             foreach (var force in this.ActiveForces)
             {
                 output += force; 
             }
             return output; 
+        }
+
+        public Vector3 GetNetTorque()
+        {
+            Vector3 output = new(0f, 0f, 0f);
+            foreach (var force in this.ActiveForces)
+            {
+                output += force.Torque;
+            }
+            return output;
         }
         
         /// <summary>
@@ -202,6 +245,31 @@ namespace MillerInc.PhysicsEngine
 
         #endregion
 
+        #region Simulation
+
+        /// <summary>
+        /// Simulates one time step of the object (WARNING: THIS IS MEANT ONLY FOR SMALL TIME STEPS SINCE THE FORCES 
+        /// ARE ASSUMED AS CONSTANT OVER THE TIMEFRAME; To avoid this, use HLoD object, this will require more processing power, 
+        /// but will be more accurate)
+        /// </summary>
+        /// <param name="timeStep"></param>
+        /// <returns>this object in its new state; is not necessary since it does save its state into itself</returns>
+        public PhysicsObject Simulate(float timeStep)
+        {
+            this.Time += timeStep;
+            this.UpdateForces(timeStep);
+            this.Acceleration = this.NetForce / this.Mass;
+            this.Velocity += this.Acceleration * timeStep;
+            this.Position += this.Velocity * timeStep;
+            this.AngularAcceleration = this.GetNetTorque() / this.MomentOfInertia; 
+            this.AngularVelocity += this.AngularAcceleration * timeStep;
+            Vector3 temp = new(this.AngularVelocity.X, this.AngularVelocity.Y, this.AngularVelocity.Z);
+            this.Rotation = Quaternion.CreateFromAxisAngle(temp, this.AngularVelocity.Length() * timeStep) * this.Rotation;
+            return this; 
+        }
+
+        #endregion
+
         #region Private Copying Methods
 
         /// <summary>
@@ -215,10 +283,10 @@ namespace MillerInc.PhysicsEngine
             this.Size = other.Size;
             this.Position = other.Position;
             this.Velocity = other.Velocity;
-            this.Alpha = other.Alpha;
+            this.AngularAcceleration = other.AngularAcceleration;
             this.Acceleration = other.Acceleration;
             this.ActiveForces = MillerInc.Methods.Lists.Copy.CopyFrom(other.ActiveForces);
-            this.Omega = other.Omega; 
+            this.AngularVelocity = other.AngularVelocity; 
             this.Rotation = other.Rotation;
         }
 
@@ -232,6 +300,14 @@ namespace MillerInc.PhysicsEngine
             this.CopyFrom(other); 
         }
 
+
+        public override string ToString()
+        {
+            return $"{this.ObjectName}: at position {this.Position} at rotation of {this.Rotation} moving with velocity {this.Velocity} at an acceleration of " +
+                $"{this.Acceleration}. This object as a total of {this.ActiveForces.Count} forces acting on it with a net force of " +
+                $"{this.NetForce}, and is rotating at an angular speed of {this.AngularVelocity} at an angular acceleration of {this.AngularAcceleration}." +
+                $" Mass of {this.Mass} and net charge of {this.Charge} in Coulombs "; 
+        }
         #endregion
     }
 }

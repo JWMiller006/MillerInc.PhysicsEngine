@@ -20,8 +20,8 @@ namespace MillerInc.PhysicsEngine.HLoD
             this.Rotation = obj.Rotation;
             this.Velocity = obj.Velocity;
             this.Acceleration = obj.Acceleration;
-            this.Omega = obj.Omega;
-            this.Alpha = obj.Alpha;
+            this.AngularVelocity = obj.AngularVelocity;
+            this.AngularAcceleration = obj.AngularAcceleration;
             this.ActiveForces = obj.ActiveForces;
             this.Mass = obj.Mass;
             this.MomentOfInertia = obj.MomentOfInertia; 
